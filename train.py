@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_squared_error, r2_score, accuracy_score
 import matplotlib.pyplot as plt
 import seaborn as sns
 import joblib
@@ -80,6 +80,8 @@ grid_search.fit(X_train, y_train)
 
 
 best_model = grid_search.best_estimator_
+best_model.fit(X_train, y_train)
+
 # Predict on test set
 test_prediction = best_model.predict(X_test)
 
@@ -91,18 +93,22 @@ test_score = best_model.score(X_test, y_test)
 test_mse = mean_squared_error(y_test, test_prediction)
 
 
+
 print("----------------BOSTON HOUSE------------------ \n")
 
 print(f"Test Set - Model mean Accuracy: {test_score}")
 print(f"Test Set - Mean Squared Error: {test_mse}")
+
 
 print("---------------------------------------------")
 # Evaluate the Model on training set
 train_score = best_model.score(X_train, y_train)
 train_mse = mean_squared_error(y_train, yprediction)
 
+
 print(f"Training Set - Model mean Accuracy: {train_score}")
 print(f"Training Set - Mean Squared Error: {train_mse}")
+
 
 # save the model
 joblib.dump(best_model, 'BostonHouse_prediction.pkl')
