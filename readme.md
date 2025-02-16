@@ -7,7 +7,7 @@ This project aims to predict the median value of owner-occupied homes in Boston 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/boston-house-price-prediction.git
+   git clone https://github.com/petsamuel/boston-house-price-prediction.git
    cd boston-house-price-prediction
    ```
 
