@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import mean_squared_error, r2_score
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -61,23 +61,34 @@ y_target = dataset_inputer['MEDV']
 # ------------------------------
 
 # Split data
-X_train, X_test, y_train, y_test = train_test_split(X_features, y_target, test_size=0.2, random_state=42)
-
+X_train, X_test, y_train, y_test = train_test_split(X_features, y_target, test_size=0.3, random_state=42)
+X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, test_size=0.7, random_state=42)
 
 # Train the Model
-model = LinearRegression( )
-model.fit(X_train, y_train)
+model = LinearRegression()
+
+# hyperparameters grid for Grid Search
+param_grid = {
+    'fit_intercept': [True, False],
+}
+
+grid_search = GridSearchCV(model, param_grid, cv=5)
+
+#perform Grid Search with cross-validation
+grid_search.fit(X_train, y_train)
 
 
+
+best_model = grid_search.best_estimator_
 # Predict on test set
-prediction = model.predict(X_test)
+test_prediction = best_model.predict(X_test)
 
 # Predict on training set
-yprediction = model.predict(X_train)
+yprediction = best_model.predict(X_train)
 
 # Evaluate the Model on test set
-test_score = model.score(X_test, y_test)
-test_mse = mean_squared_error(y_test, prediction)
+test_score = best_model.score(X_test, y_test)
+test_mse = mean_squared_error(y_test, test_prediction)
 
 
 print("----------------BOSTON HOUSE------------------ \n")
@@ -87,14 +98,14 @@ print(f"Test Set - Mean Squared Error: {test_mse}")
 
 print("---------------------------------------------")
 # Evaluate the Model on training set
-train_score = model.score(X_train, y_train)
+train_score = best_model.score(X_train, y_train)
 train_mse = mean_squared_error(y_train, yprediction)
 
 print(f"Training Set - Model mean Accuracy: {train_score}")
 print(f"Training Set - Mean Squared Error: {train_mse}")
 
 # save the model
-joblib.dump(model, 'BostonHouse_prediction.pkl')
+joblib.dump(best_model, 'BostonHouse_prediction.pkl')
 
 
 # Test using save model
@@ -119,7 +130,7 @@ print(f"interpretation-  {predicted_result[0]:.2f} Median value of owner-occupie
 
 # Plot Actual vs Predicted Value
 plt.figure(figsize=(10, 5))
-plt.scatter(y_test, prediction, color='blue', label='Actual vs Predicted', alpha=0.5)
+plt.scatter(y_test, test_prediction, color='blue', label='Actual vs Predicted', alpha=0.5)
 plt.plot([y_target.min(), y_target.max()], [y_target.min(), y_target.max()], color='red', lw=2, label='Perfect Prediction')
 plt.title('Actual vs Predicted Value')
 plt.xlabel('Actual Value')
@@ -127,7 +138,7 @@ plt.ylabel('Predicted Value')
 plt.savefig('actual_vs_predicted.png')
 
 # Plot Residuals
-residuals = y_test - prediction
+residuals = y_test - test_prediction
 plt.figure(figsize=(10, 5))
 sns.histplot(residuals, kde=True, color='purple')
 plt.title('Residuals Distribution')

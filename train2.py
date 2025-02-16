@@ -1,5 +1,5 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.linear_model import LogisticRegression
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import accuracy_score
@@ -39,22 +39,34 @@ y_target = dataset_inputer['Species']
 # ------------------------------
 
 # Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X_features, y_target, test_size=0.2, random_state=42)
-
+X_train, X_test, y_train, y_test = train_test_split(X_features, y_target, test_size=0.3, random_state=42)
+X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, test_size=0.7, random_state=42)
 #train the model
 model = LogisticRegression(max_iter=200)
-model.fit(X_train, y_train)
 
+# hperparameter tuning
+param_grid ={
+    'fit_intercept': [True, False],
+    'C': [0.1, 1, 10, 100],
+}
+grid_search = GridSearchCV(estimator=model, param_grid=param_grid, cv=3, n_jobs=-1)
+
+#best model
+grid_search.fit(X_train, y_train)
+best_model = grid_search.best_estimator_
+
+
+best_model.fit(X_train, y_train)
 # Make predictions
-y_pred = model.predict(X_test)
-x_pred = model.predict(X_train)
+y_pred = best_model.predict(X_test)
+x_pred = best_model.predict(X_train)
 
 # Calculate accuracy
 test_accuracy = accuracy_score(y_test, y_pred)
 train_accuracy = accuracy_score(y_train, x_pred)
 
 # save the model
-joblib.dump(model, 'Iris_prediction.pkl')
+joblib.dump(best_model, 'Iris_prediction.pkl')
 
 #-------------------------
 # 4. Display Results
